@@ -1,26 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const {
-  getBookings,
-  getBooking,
-  createBooking,
-  validateTicket
-} = require('../controllers/bookingController');
+const bookingController = require('../controllers/bookingController');
 const { protect } = require('../middleware/auth');
 
-// All routes protected by JWT
-router.use(protect);
+router.route('/')
+  .get(protect, bookingController.getBookings)
+  .post(protect, bookingController.createBooking);
 
-// GET /api/bookings
-router.get('/', getBookings);
+router.route('/:id')
+  .get(protect, bookingController.getBooking);
 
-// GET /api/bookings/:id
-router.get('/:id', getBooking);
-
-// POST /api/bookings
-router.post('/', createBooking);
-
-// BONUS: GET /api/bookings/validate/:qr
-router.get('/validate/:qr', validateTicket);
+// Bonus: QR validation route
+router.get('/validate/:qr', bookingController.validateTicket);
 
 module.exports = router;
