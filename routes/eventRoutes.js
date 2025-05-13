@@ -6,22 +6,37 @@ const {
   createEvent,
   updateEvent,
   deleteEvent
-} = require('../controllers/eventController'); // Make sure these exist
+} = require('../controllers/eventController');
 const { protect, admin } = require('../middleware/auth');
 
-// GET /api/events
+/**
+ * @route GET /api/events
+ * @desc Get all events
+ */
 router.get('/', getEvents);
 
-// GET /api/events/:id
+/**
+ * @route GET /api/events/:id
+ * @desc Get single event
+ */
 router.get('/:id', getEvent);
 
-// POST /api/events (admin only)
+/**
+ * @route POST /api/events
+ * @desc Create new event (Admin only)
+ */
 router.post('/', protect, admin, createEvent);
 
-// PUT /api/events/:id (admin only)
+/**
+ * @route PUT /api/events/:id
+ * @desc Update event (Admin only)
+ */
 router.put('/:id', protect, admin, updateEvent);
 
-// DELETE /api/events/:id (admin only)
+/**
+ * @route DELETE /api/events/:id
+ * @desc Delete event (Admin only)
+ */
 router.delete('/:id', protect, admin, deleteEvent);
 
 module.exports = router;

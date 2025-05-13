@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Import all route files
+// Import individual route files
 const authRoutes = require('./authRoutes');
 const eventRoutes = require('./eventRoutes');
 const bookingRoutes = require('./bookingRoutes');
