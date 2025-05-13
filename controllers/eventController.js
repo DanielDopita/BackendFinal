@@ -1,18 +1,14 @@
 const Event = require('../models/Event');
 
-// @desc    Get all events
-// @route   GET /api/events
-// @access  Public
-exports.getEvents = async (req, res, next) => {
+// Get all events
+const getEvents = async (req, res, next) => {
   try {
     let query = {};
     
-    // Filter by category
     if (req.query.category) {
       query.category = req.query.category;
     }
     
-    // Filter by date
     if (req.query.date) {
       const date = new Date(req.query.date);
       query.date = {
@@ -28,30 +24,21 @@ exports.getEvents = async (req, res, next) => {
   }
 };
 
-// @desc    Get single event
-// @route   GET /api/events/:id
-// @access  Public
-exports.getEvent = async (req, res, next) => {
+// Get single event
+const getEvent = async (req, res, next) => {
   try {
     const event = await Event.findById(req.params.id);
-    
     if (!event) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Event not found' 
-      });
+      return res.status(404).json({ success: false, error: 'Event not found' });
     }
-    
     res.status(200).json({ success: true, data: event });
   } catch (err) {
     next(err);
   }
 };
 
-// @desc    Create new event
-// @route   POST /api/events
-// @access  Private/Admin
-exports.createEvent = async (req, res, next) => {
+// Create event
+const createEvent = async (req, res, next) => {
   try {
     const event = await Event.create(req.body);
     res.status(201).json({ success: true, data: event });
@@ -60,21 +47,14 @@ exports.createEvent = async (req, res, next) => {
   }
 };
 
-// @desc    Update event
-// @route   PUT /api/events/:id
-// @access  Private/Admin
-exports.updateEvent = async (req, res, next) => {
+// Update event
+const updateEvent = async (req, res, next) => {
   try {
     let event = await Event.findById(req.params.id);
-
     if (!event) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Event not found' 
-      });
+      return res.status(404).json({ success: false, error: 'Event not found' });
     }
 
-    // Prevent reducing capacity below booked seats
     if (req.body.seatCapacity && req.body.seatCapacity < event.bookedSeats) {
       return res.status(400).json({
         success: false,
@@ -93,23 +73,15 @@ exports.updateEvent = async (req, res, next) => {
   }
 };
 
-// @desc    Delete event
-// @route   DELETE /api/events/:id
-// @access  Private/Admin
-exports.deleteEvent = async (req, res, next) => {
+// Delete event
+const deleteEvent = async (req, res, next) => {
   try {
     const event = await Event.findById(req.params.id);
-
     if (!event) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Event not found' 
-      });
+      return res.status(404).json({ success: false, error: 'Event not found' });
     }
 
-    // Check if event has bookings
-    const hasBookings = event.bookedSeats > 0;
-    if (hasBookings) {
+    if (event.bookedSeats > 0) {
       return res.status(400).json({
         success: false,
         error: 'Cannot delete event with existing bookings'
@@ -117,18 +89,12 @@ exports.deleteEvent = async (req, res, next) => {
     }
 
     await event.deleteOne();
-
-    res.status(200).json({ 
-      success: true, 
-      data: {},
-      message: 'Event deleted successfully'
-    });
+    res.status(200).json({ success: true, data: {} });
   } catch (err) {
     next(err);
   }
 };
 
-// Make sure all methods are exported
 module.exports = {
   getEvents,
   getEvent,
