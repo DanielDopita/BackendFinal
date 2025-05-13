@@ -7,22 +7,12 @@ const {
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
-/**
- * @route POST /api/auth/register
- * @desc Register a new user
- */
+// Debugging
+console.log('Register function type:', typeof register);
+
+// Routes
 router.post('/register', register);
-
-/**
- * @route POST /api/auth/login
- * @desc Login user
- */
 router.post('/login', login);
-
-/**
- * @route GET /api/auth/me
- * @desc Get current user data
- */
 router.get('/me', protect, getMe);
 
 module.exports = router;

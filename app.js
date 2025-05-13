@@ -20,17 +20,47 @@ app.use((req, res, next) => {
 });
 
 // Database connection
-const connectDB = require('./config/db');
-connectDB().then(() => {
-  console.log('Database connected successfully');
-}).catch(err => {
-  console.error('Database connection failed:', err);
-});
+const connectDB = async () => {
+    try {
+      const conn = await mongoose.connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 45000
+      });
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+      return conn;
+    } catch (err) {
+      console.error('MongoDB connection error:', err);
+      // Retry logic
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return connectDB();
+    }
+  };
 
 // Import routes
-const authRoutes = require('./routes/authRoutes');
-const eventRoutes = require('./routes/eventRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
+let authRoutes, eventRoutes, bookingRoutes;
+
+try {
+  authRoutes = require('./routes/authRoutes');
+  console.log('Auth routes loaded successfully');
+} catch (err) {
+  console.error('Failed to load auth routes:', err);
+}
+
+try {
+  eventRoutes = require('./routes/eventRoutes');
+  console.log('Event routes loaded successfully');
+} catch (err) {
+  console.error('Failed to load event routes:', err);
+}
+
+try {
+  bookingRoutes = require('./routes/bookingRoutes');
+  console.log('Booking routes loaded successfully');
+} catch (err) {
+  console.error('Failed to load booking routes:', err);
+}
 
 // API Routes
 const apiRouter = express.Router();
@@ -45,6 +75,24 @@ apiRouter.get('/', (req, res) => res.json({
 apiRouter.use('/auth', authRoutes);
 apiRouter.use('/events', eventRoutes);
 apiRouter.use('/bookings', bookingRoutes);
+
+const validateRouteHandlers = (router) => {
+    router.stack.forEach(layer => {
+      if (layer.route) {
+        layer.route.stack.forEach(route => {
+          if (typeof route.handle !== 'function') {
+            console.error(`Invalid route handler for ${layer.route.path}`);
+            throw new Error(`Route handler for ${layer.route.path} is not a function`);
+          }
+        });
+      }
+    });
+  };
+  
+  // Validate all routes
+  validateRouteHandlers(authRoutes);
+  validateRouteHandlers(eventRoutes);
+  validateRouteHandlers(bookingRoutes);  
 
 // Mount the API router
 app.use('/api', apiRouter);
